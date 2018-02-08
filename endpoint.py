@@ -60,8 +60,8 @@ class Endpoint(object):
             name = conversion.decode_meta_message(packet).name
         except:
             name = "???"
-        self._logger.debug("%30s %s %15s:%-5d %4d bytes", name, '->' if outbound else '<-',
-                     sock_addr[0], sock_addr[1], len(packet))
+        self._logger.debug("%30s %s %15s:%-5d %4d bytes local %30s", name, '->' if outbound else '<-',
+                           sock_addr[0], sock_addr[1], len(packet), repr(self.get_address()))
 
         if outbound:
             self._dispersy.statistics.dict_inc(u"endpoint_send", name)
@@ -220,6 +220,8 @@ class StandaloneEndpoint(Endpoint):
                            packet[1].startswith(p)), None)
             if prefix:
                 sock_addr, data = packet
+                if self._logger.isEnabledFor(logging.DEBUG):
+                    self.log_packet(sock_addr, data, outbound=False)
                 self.packet_handlers[prefix](sock_addr, data[len(prefix):])
             else:
                 normal_packets.append(packet)
